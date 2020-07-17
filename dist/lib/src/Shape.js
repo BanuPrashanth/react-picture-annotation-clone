@@ -47,17 +47,26 @@ export class RectShape {
                 canvas2D.fillRect(x, y, width, height);
             }
             else {
-                const { comment } = this.annotationData;
-                if (comment) {
-                    canvas2D.font = `${shapeStyle.fontSize}px ${shapeStyle.fontFamily}`;
-                    const metrics = canvas2D.measureText(comment);
-                    canvas2D.save();
-                    canvas2D.fillStyle = shapeStyle.fontBackground;
-                    canvas2D.fillRect(x, y, metrics.width + shapeStyle.padding * 2, shapeStyle.fontSize + shapeStyle.padding * 2);
-                    canvas2D.textBaseline = "top";
-                    canvas2D.fillStyle = shapeStyle.fontColor;
-                    canvas2D.fillText(comment, x + shapeStyle.padding, y + shapeStyle.padding);
-                }
+                // const { comment } = this.annotationData;
+                // if (comment) {
+                //   canvas2D.font = `${shapeStyle.fontSize}px ${shapeStyle.fontFamily}`;
+                //   const metrics = canvas2D.measureText(comment);
+                //   canvas2D.save();
+                //   canvas2D.fillStyle = shapeStyle.fontBackground;
+                //   canvas2D.fillRect(
+                //     x,
+                //     y,
+                //     metrics.width + shapeStyle.padding * 2,
+                //     shapeStyle.fontSize + shapeStyle.padding * 2
+                //   );
+                //   canvas2D.textBaseline = "top";
+                //   canvas2D.fillStyle = shapeStyle.fontColor;
+                //   canvas2D.fillText(
+                //     comment,
+                //     x + shapeStyle.padding,
+                //     y + shapeStyle.padding
+                //   );
+                // }
             }
             canvas2D.restore();
             return { x, y, width, height };

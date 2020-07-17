@@ -330,19 +330,6 @@ var RectShape = function RectShape(_data, onChange) {
     if (selected) {
       canvas2D.fillStyle = shapeStyle.shapeBackground;
       canvas2D.fillRect(x, y, width, height);
-    } else {
-      var _comment = _this.annotationData.comment;
-
-      if (_comment) {
-        canvas2D.font = "".concat(shapeStyle.fontSize, "px ").concat(shapeStyle.fontFamily);
-        var metrics = canvas2D.measureText(_comment);
-        canvas2D.save();
-        canvas2D.fillStyle = shapeStyle.fontBackground;
-        canvas2D.fillRect(x, y, metrics.width + shapeStyle.padding * 2, shapeStyle.fontSize + shapeStyle.padding * 2);
-        canvas2D.textBaseline = "top";
-        canvas2D.fillStyle = shapeStyle.fontColor;
-        canvas2D.fillText(_comment, x + shapeStyle.padding, y + shapeStyle.padding);
-      }
     }
 
     canvas2D.restore();
