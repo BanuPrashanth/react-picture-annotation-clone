@@ -230,37 +230,40 @@ export default class ReactPictureAnnotation extends React.Component {
         this.onMouseLeave = () => {
             this.currentAnnotationState.onMouseLeave();
         };
-        this.onWheel = (event) => {
-            // https://stackoverflow.com/a/31133823/9071503
-            const { clientHeight, scrollTop, scrollHeight } = event.currentTarget;
-            if (clientHeight + scrollTop + event.deltaY > scrollHeight) {
-                // event.preventDefault();
-                event.currentTarget.scrollTop = scrollHeight;
-            }
-            else if (scrollTop + event.deltaY < 0) {
-                // event.preventDefault();
-                event.currentTarget.scrollTop = 0;
-            }
-            const { scale: preScale } = this.scaleState;
-            this.scaleState.scale += event.deltaY * 0.005;
-            if (this.scaleState.scale > 10) {
-                this.scaleState.scale = 10;
-            }
-            if (this.scaleState.scale < 0.1) {
-                this.scaleState.scale = 0.1;
-            }
-            const { originX, originY, scale } = this.scaleState;
-            const { offsetX, offsetY } = event.nativeEvent;
-            this.scaleState.originX =
-                offsetX - ((offsetX - originX) / preScale) * scale;
-            this.scaleState.originY =
-                offsetY - ((offsetY - originY) / preScale) * scale;
-            this.setState({ imageScale: this.scaleState });
-            requestAnimationFrame(() => {
-                this.onShapeChange();
-                this.onImageChange();
-            });
-        };
+        // private onWheel = (event: React.WheelEvent<HTMLCanvasElement>) => {
+        //   // https://stackoverflow.com/a/31133823/9071503
+        //   const { clientHeight, scrollTop, scrollHeight } = event.currentTarget;
+        //   if (clientHeight + scrollTop + event.deltaY > scrollHeight) {
+        //     // event.preventDefault();
+        //     event.currentTarget.scrollTop = scrollHeight;
+        //   } else if (scrollTop + event.deltaY < 0) {
+        //     // event.preventDefault();
+        //     event.currentTarget.scrollTop = 0;
+        //   }
+        //
+        //   const { scale: preScale } = this.scaleState;
+        //   this.scaleState.scale += event.deltaY * 0.005;
+        //   if (this.scaleState.scale > 10) {
+        //     this.scaleState.scale = 10;
+        //   }
+        //   if (this.scaleState.scale < 0.1) {
+        //     this.scaleState.scale = 0.1;
+        //   }
+        //
+        //   const { originX, originY, scale } = this.scaleState;
+        //   const { offsetX, offsetY } = event.nativeEvent;
+        //   this.scaleState.originX =
+        //     offsetX - ((offsetX - originX) / preScale) * scale;
+        //   this.scaleState.originY =
+        //     offsetY - ((offsetY - originY) / preScale) * scale;
+        //
+        //   this.setState({ imageScale: this.scaleState });
+        //
+        //   requestAnimationFrame(() => {
+        //     this.onShapeChange();
+        //     this.onImageChange();
+        //   });
+        // };
     }
     set selectedId(value) {
         const { onSelect } = this.props;
@@ -275,7 +278,7 @@ export default class ReactPictureAnnotation extends React.Component {
         const { showInput, inputPosition, inputComment } = this.state;
         return (React.createElement("div", { className: "rp-stage" },
             React.createElement("canvas", { style: { width, height }, className: "rp-image", ref: this.imageCanvasRef, width: width * 2, height: height * 2 }),
-            React.createElement("canvas", { className: "rp-shapes", style: { width, height }, ref: this.canvasRef, width: width * 2, height: height * 2, onMouseDown: this.onMouseDown, onMouseMove: this.onMouseMove, onMouseUp: this.onMouseUp, onMouseLeave: this.onMouseLeave, onWheel: this.onWheel }),
+            React.createElement("canvas", { className: "rp-shapes", style: { width, height }, ref: this.canvasRef, width: width * 2, height: height * 2, onMouseDown: this.onMouseDown, onMouseMove: this.onMouseMove, onMouseUp: this.onMouseUp, onMouseLeave: this.onMouseLeave }),
             showInput && (React.createElement("div", { className: "rp-selected-input", style: inputPosition }, inputElement(inputComment, this.onInputCommentChange, this.onDelete)))));
     }
 }

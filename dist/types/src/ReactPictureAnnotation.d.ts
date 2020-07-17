@@ -59,6 +59,5 @@ export default class ReactPictureAnnotation extends React.Component<IReactPictur
     private onMouseMove;
     private onMouseUp;
     private onMouseLeave;
-    private onWheel;
 }
 export {};
