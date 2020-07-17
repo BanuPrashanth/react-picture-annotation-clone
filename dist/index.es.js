@@ -267,7 +267,7 @@ var shapeStyle = {
   fontBackground: "#f8f9fa",
   fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', Helvetica, Arial, sans-serif",
   shapeBackground: "hsla(210, 16%, 93%, 0.2)",
-  shapeStrokeStyle: "ff0000",
+  shapeStrokeStyle: "#ff0000",
   shapeShadowStyle: "hsla(210, 9%, 31%, 0.35)"
 };
 var RectShape = function RectShape(_data, onChange) {
@@ -330,19 +330,6 @@ var RectShape = function RectShape(_data, onChange) {
     if (selected) {
       canvas2D.fillStyle = shapeStyle.shapeBackground;
       canvas2D.fillRect(x, y, width, height);
-    } else {
-      var _comment = _this.annotationData.comment;
-
-      if (_comment) {
-        canvas2D.font = "".concat(shapeStyle.fontSize, "px ").concat(shapeStyle.fontFamily);
-        var metrics = canvas2D.measureText(_comment);
-        canvas2D.save();
-        canvas2D.fillStyle = shapeStyle.fontBackground;
-        canvas2D.fillRect(x, y, metrics.width + shapeStyle.padding * 2, shapeStyle.fontSize + shapeStyle.padding * 2);
-        canvas2D.textBaseline = "top";
-        canvas2D.fillStyle = shapeStyle.fontColor;
-        canvas2D.fillText(_comment, x + shapeStyle.padding, y + shapeStyle.padding);
-      }
     }
 
     canvas2D.restore();
@@ -1169,53 +1156,6 @@ var ReactPictureAnnotation = /*#__PURE__*/function (_React$Component) {
       _this.currentAnnotationState.onMouseLeave();
     });
 
-    _defineProperty(_assertThisInitialized(_this), "onWheel", function (event) {
-      // https://stackoverflow.com/a/31133823/9071503
-      var _event$currentTarget = event.currentTarget,
-          clientHeight = _event$currentTarget.clientHeight,
-          scrollTop = _event$currentTarget.scrollTop,
-          scrollHeight = _event$currentTarget.scrollHeight;
-
-      if (clientHeight + scrollTop + event.deltaY > scrollHeight) {
-        // event.preventDefault();
-        event.currentTarget.scrollTop = scrollHeight;
-      } else if (scrollTop + event.deltaY < 0) {
-        // event.preventDefault();
-        event.currentTarget.scrollTop = 0;
-      }
-
-      var preScale = _this.scaleState.scale;
-      _this.scaleState.scale += event.deltaY * 0.005;
-
-      if (_this.scaleState.scale > 10) {
-        _this.scaleState.scale = 10;
-      }
-
-      if (_this.scaleState.scale < 0.1) {
-        _this.scaleState.scale = 0.1;
-      }
-
-      var _this$scaleState4 = _this.scaleState,
-          originX = _this$scaleState4.originX,
-          originY = _this$scaleState4.originY,
-          scale = _this$scaleState4.scale;
-      var _event$nativeEvent3 = event.nativeEvent,
-          offsetX = _event$nativeEvent3.offsetX,
-          offsetY = _event$nativeEvent3.offsetY;
-      _this.scaleState.originX = offsetX - (offsetX - originX) / preScale * scale;
-      _this.scaleState.originY = offsetY - (offsetY - originY) / preScale * scale;
-
-      _this.setState({
-        imageScale: _this.scaleState
-      });
-
-      requestAnimationFrame(function () {
-        _this.onShapeChange();
-
-        _this.onImageChange();
-      });
-    });
-
     return _this;
   }
 
@@ -1253,13 +1193,47 @@ var ReactPictureAnnotation = /*#__PURE__*/function (_React$Component) {
         onMouseDown: this.onMouseDown,
         onMouseMove: this.onMouseMove,
         onMouseUp: this.onMouseUp,
-        onMouseLeave: this.onMouseLeave,
-        onWheel: this.onWheel
+        onMouseLeave: this.onMouseLeave // onWheel={this.onWheel}
+
       }), showInput && /*#__PURE__*/React.createElement("div", {
         className: "rp-selected-input",
         style: inputPosition
       }, inputElement(inputComment, this.onInputCommentChange, this.onDelete)));
-    }
+    } // private onWheel = (event: React.WheelEvent<HTMLCanvasElement>) => {
+    //   // https://stackoverflow.com/a/31133823/9071503
+    //   const { clientHeight, scrollTop, scrollHeight } = event.currentTarget;
+    //   if (clientHeight + scrollTop + event.deltaY > scrollHeight) {
+    //     // event.preventDefault();
+    //     event.currentTarget.scrollTop = scrollHeight;
+    //   } else if (scrollTop + event.deltaY < 0) {
+    //     // event.preventDefault();
+    //     event.currentTarget.scrollTop = 0;
+    //   }
+    //
+    //   const { scale: preScale } = this.scaleState;
+    //   this.scaleState.scale += event.deltaY * 0.005;
+    //   if (this.scaleState.scale > 10) {
+    //     this.scaleState.scale = 10;
+    //   }
+    //   if (this.scaleState.scale < 0.1) {
+    //     this.scaleState.scale = 0.1;
+    //   }
+    //
+    //   const { originX, originY, scale } = this.scaleState;
+    //   const { offsetX, offsetY } = event.nativeEvent;
+    //   this.scaleState.originX =
+    //     offsetX - ((offsetX - originX) / preScale) * scale;
+    //   this.scaleState.originY =
+    //     offsetY - ((offsetY - originY) / preScale) * scale;
+    //
+    //   this.setState({ imageScale: this.scaleState });
+    //
+    //   requestAnimationFrame(() => {
+    //     this.onShapeChange();
+    //     this.onImageChange();
+    //   });
+    // };
+
   }, {
     key: "selectedId",
     set: function set(value) {

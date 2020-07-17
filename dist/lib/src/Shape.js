@@ -6,7 +6,7 @@ export const shapeStyle = {
     fontBackground: "#f8f9fa",
     fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', Helvetica, Arial, sans-serif",
     shapeBackground: "hsla(210, 16%, 93%, 0.2)",
-    shapeStrokeStyle: "ff0000",
+    shapeStrokeStyle: "#ff0000",
     shapeShadowStyle: "hsla(210, 9%, 31%, 0.35)"
 };
 export class RectShape {
@@ -47,17 +47,26 @@ export class RectShape {
                 canvas2D.fillRect(x, y, width, height);
             }
             else {
-                const { comment } = this.annotationData;
-                if (comment) {
-                    canvas2D.font = `${shapeStyle.fontSize}px ${shapeStyle.fontFamily}`;
-                    const metrics = canvas2D.measureText(comment);
-                    canvas2D.save();
-                    canvas2D.fillStyle = shapeStyle.fontBackground;
-                    canvas2D.fillRect(x, y, metrics.width + shapeStyle.padding * 2, shapeStyle.fontSize + shapeStyle.padding * 2);
-                    canvas2D.textBaseline = "top";
-                    canvas2D.fillStyle = shapeStyle.fontColor;
-                    canvas2D.fillText(comment, x + shapeStyle.padding, y + shapeStyle.padding);
-                }
+                // const { comment } = this.annotationData;
+                // if (comment) {
+                //   canvas2D.font = `${shapeStyle.fontSize}px ${shapeStyle.fontFamily}`;
+                //   const metrics = canvas2D.measureText(comment);
+                //   canvas2D.save();
+                //   canvas2D.fillStyle = shapeStyle.fontBackground;
+                //   canvas2D.fillRect(
+                //     x,
+                //     y,
+                //     metrics.width + shapeStyle.padding * 2,
+                //     shapeStyle.fontSize + shapeStyle.padding * 2
+                //   );
+                //   canvas2D.textBaseline = "top";
+                //   canvas2D.fillStyle = shapeStyle.fontColor;
+                //   canvas2D.fillText(
+                //     comment,
+                //     x + shapeStyle.padding,
+                //     y + shapeStyle.padding
+                //   );
+                // }
             }
             canvas2D.restore();
             return { x, y, width, height };
