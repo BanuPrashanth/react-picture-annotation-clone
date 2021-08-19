@@ -874,7 +874,9 @@ var ReactPictureAnnotation = /*#__PURE__*/function (_React$Component) {
         }
       }
 
-      if (preProps.enableZoom !== enableZoom && !enableZoom) _this.onImageChange(defaultState, true);
+      if (preProps.enableZoom !== enableZoom && !enableZoom) {
+        _this.onImageChange(defaultState, true);
+      }
 
       _this.syncAnnotationData();
 
@@ -1229,7 +1231,6 @@ var ReactPictureAnnotation = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
-      console.log(this);
       var _this$props3 = this.props,
           width = _this$props3.width,
           height = _this$props3.height,

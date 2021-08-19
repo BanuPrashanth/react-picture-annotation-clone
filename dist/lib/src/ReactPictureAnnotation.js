@@ -54,8 +54,9 @@ export default class ReactPictureAnnotation extends React.Component {
                     this.onImageChange(this.scaleState);
                 }
             }
-            if (preProps.enableZoom !== enableZoom && !enableZoom)
+            if (preProps.enableZoom !== enableZoom && !enableZoom) {
                 this.onImageChange(defaultState, true);
+            }
             this.syncAnnotationData();
             this.syncSelectedId();
         };
@@ -276,7 +277,6 @@ export default class ReactPictureAnnotation extends React.Component {
         return this.selectedIdTrueValue;
     }
     render() {
-        console.log(this);
         const { width, height, inputElement } = this.props;
         const { showInput, inputPosition, inputComment } = this.state;
         return (React.createElement("div", { className: "rp-stage" },
