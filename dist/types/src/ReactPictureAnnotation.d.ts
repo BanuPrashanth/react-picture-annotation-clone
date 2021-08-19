@@ -11,6 +11,7 @@ interface IReactPictureAnnotationProps {
     width: number;
     height: number;
     image: string;
+    enableZoom?: boolean;
     inputElement: (value: string, onChange: (value: string) => void, onDelete: () => void) => React.ReactElement;
 }
 export default class ReactPictureAnnotation extends React.Component<IReactPictureAnnotationProps> {
@@ -59,5 +60,6 @@ export default class ReactPictureAnnotation extends React.Component<IReactPictur
     private onMouseMove;
     private onMouseUp;
     private onMouseLeave;
+    private onWheel;
 }
 export {};

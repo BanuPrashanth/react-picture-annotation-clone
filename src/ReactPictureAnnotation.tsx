@@ -15,6 +15,7 @@ interface IReactPictureAnnotationProps {
   width: number;
   height: number;
   image: string;
+  enableZoom?: boolean;
   inputElement: (
     value: string,
     onChange: (value: string) => void,
@@ -91,7 +92,7 @@ export default class ReactPictureAnnotation extends React.Component<
 
       this.canvas2D = currentCanvas.getContext("2d");
       this.imageCanvas2D = currentImageCanvas.getContext("2d");
-      this.onImageChange();
+      this.onImageChange(this.scaleState);
     }
 
     this.syncAnnotationData();
@@ -99,19 +100,22 @@ export default class ReactPictureAnnotation extends React.Component<
   };
 
   public componentDidUpdate = (preProps: IReactPictureAnnotationProps) => {
-    const { width, height, image } = this.props;
+    const { width, height, image, enableZoom } = this.props;
     if (preProps.width !== width || preProps.height !== height) {
       this.setCanvasDPI();
       this.onShapeChange();
-      this.onImageChange();
+      this.onImageChange(this.scaleState);
     }
     if (preProps.image !== image) {
       this.cleanImage();
       if (this.currentImageElement) {
         this.currentImageElement.src = image;
       } else {
-        this.onImageChange();
+        this.onImageChange(this.scaleState);
       }
+    }
+    if (preProps.enableZoom !== enableZoom && !enableZoom) {
+      this.onImageChange(defaultState, true);
     }
 
     this.syncAnnotationData();
@@ -159,7 +163,7 @@ export default class ReactPictureAnnotation extends React.Component<
           onMouseMove={this.onMouseMove}
           onMouseUp={this.onMouseUp}
           onMouseLeave={this.onMouseLeave}
-          // onWheel={this.onWheel}
+          onWheel={this.onWheel}
         />
         {showInput && (
           <div className="rp-selected-input" style={inputPosition}>
@@ -317,11 +321,11 @@ export default class ReactPictureAnnotation extends React.Component<
     }
   };
 
-  private onImageChange = () => {
+  private onImageChange = (scaleState: IStageState, setDefault?: boolean) => {
     this.cleanImage();
     if (this.imageCanvas2D && this.imageCanvasRef.current) {
-      if (this.currentImageElement) {
-        const { originX, originY, scale } = this.scaleState;
+      if (this.currentImageElement && !setDefault) {
+        const { originX, originY, scale } = scaleState;
         this.imageCanvas2D.drawImage(
           this.currentImageElement,
           originX,
@@ -354,7 +358,7 @@ export default class ReactPictureAnnotation extends React.Component<
               };
             }
           }
-          this.onImageChange();
+          this.onImageChange(this.scaleState);
           this.onShapeChange();
         });
         nextImageNode.alt = "";
@@ -390,37 +394,40 @@ export default class ReactPictureAnnotation extends React.Component<
   };
 
   private onWheel = (event: React.WheelEvent<HTMLCanvasElement>) => {
-    // https://stackoverflow.com/a/31133823/9071503
-    const { clientHeight, scrollTop, scrollHeight } = event.currentTarget;
-    if (clientHeight + scrollTop + event.deltaY > scrollHeight) {
-      // event.preventDefault();
-      event.currentTarget.scrollTop = scrollHeight;
-    } else if (scrollTop + event.deltaY < 0) {
-      // event.preventDefault();
-      event.currentTarget.scrollTop = 0;
+    if (this.props.enableZoom) {
+      event.stopPropagation();
+      // https://stackoverflow.com/a/31133823/9071503
+      const { clientHeight, scrollTop, scrollHeight } = event.currentTarget;
+      if (clientHeight + scrollTop + event.deltaY > scrollHeight) {
+        // event.preventDefault();
+        event.currentTarget.scrollTop = scrollHeight;
+      } else if (scrollTop + event.deltaY < 0) {
+        // event.preventDefault();
+        event.currentTarget.scrollTop = 0;
+      }
+
+      const { scale: preScale } = this.scaleState;
+      this.scaleState.scale += event.deltaY * 0.005;
+      if (this.scaleState.scale > 10) {
+        this.scaleState.scale = 10;
+      }
+      if (this.scaleState.scale < 0.1) {
+        this.scaleState.scale = 0.1;
+      }
+
+      const { originX, originY, scale } = this.scaleState;
+      const { offsetX, offsetY } = event.nativeEvent;
+      this.scaleState.originX =
+        offsetX - ((offsetX - originX) / preScale) * scale;
+      this.scaleState.originY =
+        offsetY - ((offsetY - originY) / preScale) * scale;
+
+      this.setState({ imageScale: this.scaleState });
+
+      requestAnimationFrame(() => {
+        this.onShapeChange();
+        this.onImageChange(this.scaleState);
+      });
     }
-
-    const { scale: preScale } = this.scaleState;
-    this.scaleState.scale += event.deltaY * 0.005;
-    if (this.scaleState.scale > 10) {
-      this.scaleState.scale = 10;
-    }
-    if (this.scaleState.scale < 0.1) {
-      this.scaleState.scale = 0.1;
-    }
-
-    const { originX, originY, scale } = this.scaleState;
-    const { offsetX, offsetY } = event.nativeEvent;
-    this.scaleState.originX =
-      offsetX - ((offsetX - originX) / preScale) * scale;
-    this.scaleState.originY =
-      offsetY - ((offsetY - originY) / preScale) * scale;
-
-    this.setState({ imageScale: this.scaleState });
-
-    requestAnimationFrame(() => {
-      this.onShapeChange();
-      this.onImageChange();
-    });
   };
 }

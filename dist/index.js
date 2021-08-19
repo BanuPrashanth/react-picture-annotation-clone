@@ -110,7 +110,7 @@
     if (typeof Proxy === "function") return true;
 
     try {
-      Date.prototype.toString.call(Reflect.construct(Date, [], function () {}));
+      Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {}));
       return true;
     } catch (e) {
       return false;
@@ -128,6 +128,8 @@
   function _possibleConstructorReturn(self, call) {
     if (call && (typeof call === "object" || typeof call === "function")) {
       return call;
+    } else if (call !== void 0) {
+      throw new TypeError("Derived constructors may only return object or undefined");
     }
 
     return _assertThisInitialized(self);
@@ -161,14 +163,17 @@
   }
 
   function _iterableToArrayLimit(arr, i) {
-    if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return;
+    var _i = arr == null ? null : typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"];
+
+    if (_i == null) return;
     var _arr = [];
     var _n = true;
     var _d = false;
-    var _e = undefined;
+
+    var _s, _e;
 
     try {
-      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+      for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) {
         _arr.push(_s.value);
 
         if (i && _arr.length === i) break;
@@ -209,9 +214,9 @@
   }
 
   function _createForOfIteratorHelper(o, allowArrayLike) {
-    var it;
+    var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"];
 
-    if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) {
+    if (!it) {
       if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
         if (it) o = it;
         var i = 0;
@@ -244,7 +249,7 @@
         err;
     return {
       s: function () {
-        it = o[Symbol.iterator]();
+        it = it.call(o);
       },
       n: function () {
         var step = it.next();
@@ -842,7 +847,7 @@
           _this.canvas2D = currentCanvas.getContext("2d");
           _this.imageCanvas2D = currentImageCanvas.getContext("2d");
 
-          _this.onImageChange();
+          _this.onImageChange(_this.scaleState);
         }
 
         _this.syncAnnotationData();
@@ -854,14 +859,15 @@
         var _this$props = _this.props,
             width = _this$props.width,
             height = _this$props.height,
-            image = _this$props.image;
+            image = _this$props.image,
+            enableZoom = _this$props.enableZoom;
 
         if (preProps.width !== width || preProps.height !== height) {
           _this.setCanvasDPI();
 
           _this.onShapeChange();
 
-          _this.onImageChange();
+          _this.onImageChange(_this.scaleState);
         }
 
         if (preProps.image !== image) {
@@ -870,9 +876,11 @@
           if (_this.currentImageElement) {
             _this.currentImageElement.src = image;
           } else {
-            _this.onImageChange();
+            _this.onImageChange(_this.scaleState);
           }
         }
+
+        if (preProps.enableZoom !== enableZoom && !enableZoom) _this.onImageChange(defaultState, true);
 
         _this.syncAnnotationData();
 
@@ -1077,15 +1085,14 @@
         }
       });
 
-      _defineProperty(_assertThisInitialized(_this), "onImageChange", function () {
+      _defineProperty(_assertThisInitialized(_this), "onImageChange", function (scaleState, setDefault) {
         _this.cleanImage();
 
         if (_this.imageCanvas2D && _this.imageCanvasRef.current) {
-          if (_this.currentImageElement) {
-            var _this$scaleState3 = _this.scaleState,
-                originX = _this$scaleState3.originX,
-                originY = _this$scaleState3.originY,
-                scale = _this$scaleState3.scale;
+          if (_this.currentImageElement && !setDefault) {
+            var originX = scaleState.originX,
+                originY = scaleState.originY,
+                scale = scaleState.scale;
 
             _this.imageCanvas2D.drawImage(_this.currentImageElement, originX, originY, _this.currentImageElement.width * scale, _this.currentImageElement.height * scale);
           } else {
@@ -1120,7 +1127,7 @@
                 }
               }
 
-              _this.onImageChange();
+              _this.onImageChange(_this.scaleState);
 
               _this.onShapeChange();
             });
@@ -1162,12 +1169,73 @@
         _this.currentAnnotationState.onMouseLeave();
       });
 
+      _defineProperty(_assertThisInitialized(_this), "onWheel", function (event) {
+        if (_this.props.enableZoom) {
+          event.stopPropagation(); // https://stackoverflow.com/a/31133823/9071503
+
+          var _event$currentTarget = event.currentTarget,
+              clientHeight = _event$currentTarget.clientHeight,
+              scrollTop = _event$currentTarget.scrollTop,
+              scrollHeight = _event$currentTarget.scrollHeight;
+
+          if (clientHeight + scrollTop + event.deltaY > scrollHeight) {
+            // event.preventDefault();
+            event.currentTarget.scrollTop = scrollHeight;
+          } else if (scrollTop + event.deltaY < 0) {
+            // event.preventDefault();
+            event.currentTarget.scrollTop = 0;
+          }
+
+          var preScale = _this.scaleState.scale;
+          _this.scaleState.scale += event.deltaY * 0.005;
+
+          if (_this.scaleState.scale > 10) {
+            _this.scaleState.scale = 10;
+          }
+
+          if (_this.scaleState.scale < 0.1) {
+            _this.scaleState.scale = 0.1;
+          }
+
+          var _this$scaleState3 = _this.scaleState,
+              originX = _this$scaleState3.originX,
+              originY = _this$scaleState3.originY,
+              scale = _this$scaleState3.scale;
+          var _event$nativeEvent3 = event.nativeEvent,
+              offsetX = _event$nativeEvent3.offsetX,
+              offsetY = _event$nativeEvent3.offsetY;
+          _this.scaleState.originX = offsetX - (offsetX - originX) / preScale * scale;
+          _this.scaleState.originY = offsetY - (offsetY - originY) / preScale * scale;
+
+          _this.setState({
+            imageScale: _this.scaleState
+          });
+
+          requestAnimationFrame(function () {
+            _this.onShapeChange();
+
+            _this.onImageChange(_this.scaleState);
+          });
+        }
+      });
+
       return _this;
     }
 
     _createClass(ReactPictureAnnotation, [{
+      key: "selectedId",
+      get: function get() {
+        return this.selectedIdTrueValue;
+      },
+      set: function set(value) {
+        var onSelect = this.props.onSelect;
+        this.selectedIdTrueValue = value;
+        onSelect(value);
+      }
+    }, {
       key: "render",
       value: function render() {
+        console.log(this);
         var _this$props3 = this.props,
             width = _this$props3.width,
             height = _this$props3.height,
@@ -1199,56 +1267,12 @@
           onMouseDown: this.onMouseDown,
           onMouseMove: this.onMouseMove,
           onMouseUp: this.onMouseUp,
-          onMouseLeave: this.onMouseLeave // onWheel={this.onWheel}
-
+          onMouseLeave: this.onMouseLeave,
+          onWheel: this.onWheel
         }), showInput && /*#__PURE__*/React.createElement("div", {
           className: "rp-selected-input",
           style: inputPosition
         }, inputElement(inputComment, this.onInputCommentChange, this.onDelete)));
-      } // private onWheel = (event: React.WheelEvent<HTMLCanvasElement>) => {
-      //   // https://stackoverflow.com/a/31133823/9071503
-      //   const { clientHeight, scrollTop, scrollHeight } = event.currentTarget;
-      //   if (clientHeight + scrollTop + event.deltaY > scrollHeight) {
-      //     // event.preventDefault();
-      //     event.currentTarget.scrollTop = scrollHeight;
-      //   } else if (scrollTop + event.deltaY < 0) {
-      //     // event.preventDefault();
-      //     event.currentTarget.scrollTop = 0;
-      //   }
-      //
-      //   const { scale: preScale } = this.scaleState;
-      //   this.scaleState.scale += event.deltaY * 0.005;
-      //   if (this.scaleState.scale > 10) {
-      //     this.scaleState.scale = 10;
-      //   }
-      //   if (this.scaleState.scale < 0.1) {
-      //     this.scaleState.scale = 0.1;
-      //   }
-      //
-      //   const { originX, originY, scale } = this.scaleState;
-      //   const { offsetX, offsetY } = event.nativeEvent;
-      //   this.scaleState.originX =
-      //     offsetX - ((offsetX - originX) / preScale) * scale;
-      //   this.scaleState.originY =
-      //     offsetY - ((offsetY - originY) / preScale) * scale;
-      //
-      //   this.setState({ imageScale: this.scaleState });
-      //
-      //   requestAnimationFrame(() => {
-      //     this.onShapeChange();
-      //     this.onImageChange();
-      //   });
-      // };
-
-    }, {
-      key: "selectedId",
-      set: function set(value) {
-        var onSelect = this.props.onSelect;
-        this.selectedIdTrueValue = value;
-        onSelect(value);
-      },
-      get: function get() {
-        return this.selectedIdTrueValue;
       }
     }]);
 
